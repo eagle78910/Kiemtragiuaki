@@ -1,0 +1,135 @@
+@page "{id}"
+@model Kiemtragiuaki.Pages.Rooms.ManageImagesModel
+
+@{
+    ViewData["Title"] = "Manage Images";
+}
+
+<div class="container mt-5">
+    <a href="@Url.Page("Details", new { id = Model.Room?.Id })" class="btn btn-outline-secondary mb-4">← Back</a>
+
+    @if (Model.Room != null)
+    {
+        <h1 class="mb-4">Manage Images - @Model.Room.Name</h1>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @Model.ErrorMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="row">
+            <!-- Add Image Form -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Add New Image</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="add">
+                            <input type="hidden" name="NewImage.RoomId" value="@Model.Room.Id">
+
+                            <div class="mb-3">
+                                <label for="NewImage_ImageUrl" class="form-label">Image URL:</label>
+                                <input type="url" class="form-control" id="NewImage_ImageUrl" name="NewImage.ImageUrl" 
+                                       required placeholder="https://example.com/image.jpg">
+                                <small class="text-muted">Enter a valid image URL</small>
+                                <span asp-validation-for="NewImage.ImageUrl" class="text-danger small d-block"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="NewImage_IsThumbnail" 
+                                           name="NewImage.IsThumbnail" value="true">
+                                    <label class="form-check-label" for="NewImage_IsThumbnail">
+                                        Set as Thumbnail
+                                    </label>
+                                </div>
+                                @if (Model.Room.Images.Any(i => i.IsThumbnail))
+                                {
+                                    <small class="text-warning d-block">⚠️ There is already a thumbnail. Checking this will replace it.</small>
+                                }
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100">Add Image</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images Gallery -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">Room Images (@Model.Room.Images.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Room.Images.Any())
+                        {
+                            <div class="row g-3">
+                                @foreach (var image in Model.Room.Images)
+                                {
+                                    <div class="col-6">
+                                        <div class="position-relative">
+                                            <img src="@image.ImageUrl" class="img-thumbnail w-100" alt="Room image" 
+                                                 style="height: 150px; object-fit: cover;">
+
+                                            @if (image.IsThumbnail)
+                                            {
+                                                <span class="badge bg-success position-absolute top-0 start-0">Thumbnail</span>
+                                            }
+
+                                            <div class="mt-2">
+                                                @if (!image.IsThumbnail)
+                                                {
+                                                    <form method="post" asp-page-handler="SetThumbnail" 
+                                                          asp-route-imageId="@image.Id" asp-route-roomId="@Model.Room.Id" 
+                                                          class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-outline-warning w-100 mb-2">
+                                                            Set Thumbnail
+                                                        </button>
+                                                    </form>
+                                                }
+
+                                                <form method="post" asp-page-handler="delete" 
+                                                      asp-route-imageId="@image.Id" asp-route-roomId="@Model.Room.Id" 
+                                                      class="d-inline" onsubmit="return confirm('Delete this image?');">
+                                                    <button type="submit" class="btn btn-sm btn-danger w-100">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info" role="alert">
+                                No images yet. Add an image using the form on the left.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            <h4>Room Not Found</h4>
+            <p>The requested room could not be found.</p>
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

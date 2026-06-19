@@ -1,0 +1,149 @@
+@page "{id}"
+@model Kiemtragiuaki.Pages.Rooms.DetailsModel
+
+@{
+    ViewData["Title"] = Model.Room?.Name ?? "Room Details";
+}
+
+<div class="container mt-5">
+    <a href="@Url.Page("Index")" class="btn btn-outline-secondary mb-4">← Back to List</a>
+
+    @if (Model.Room != null)
+    {
+        <div class="row">
+            <!-- Images Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    @{
+                        var mainImage = Model.Room.Images.FirstOrDefault(i => i.IsThumbnail) ?? Model.Room.Images.FirstOrDefault();
+                    }
+
+                    @if (mainImage != null)
+                    {
+                        <img src="@mainImage.ImageUrl" class="card-img-top" alt="@Model.Room.Name" style="max-height: 400px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                            <span class="text-muted">No images available</span>
+                        </div>
+                    }
+
+                    @if (Model.Room.Images.Any())
+                    {
+                        <div class="card-body">
+                            <h6 class="card-title">Gallery (@Model.Room.Images.Count image(s))</h6>
+                            <div class="row g-2">
+                                @foreach (var image in Model.Room.Images)
+                                {
+                                    <div class="col-4">
+                                        <div class="position-relative">
+                                            <img src="@image.ImageUrl" class="img-thumbnail w-100" alt="Thumbnail" 
+                                                 style="cursor: pointer; height: 80px; object-fit: cover;" 
+                                                 onclick="document.querySelector('.card-img-top').src='@image.ImageUrl'">
+                                            @if (image.IsThumbnail)
+                                            {
+                                                <span class="badge bg-success position-absolute top-0 start-0">Thumbnail</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Room Details Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title mb-4">@Model.Room.Name</h2>
+
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Room Type:</th>
+                                <td>@Model.Room.RoomType?.Name</td>
+                            </tr>
+                            <tr>
+                                <th>Price:</th>
+                                <td>@Model.Room.Price.ToString("C")</td>
+                            </tr>
+                            <tr>
+                                <th>Area:</th>
+                                <td>@Model.Room.Area m²</td>
+                            </tr>
+                            <tr>
+                                <th>Price per m²:</th>
+                                <td class="badge bg-info">@Model.Room.PricePerSquareMeter.ToString("F2") đ/m²</td>
+                            </tr>
+                            <tr>
+                                <th>Availability:</th>
+                                <td>
+                                    @if (Model.Room.IsAvailable)
+                                    {
+                                        <span class="badge bg-success">Available</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Not Available</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div class="mt-4">
+                            <h6>Description:</h6>
+                            <p>@Model.Room.Description</p>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2">
+                            <a href="@Url.Page("Edit", new { id = Model.Room.Id })" class="btn btn-warning flex-grow-1">
+                                Edit Room
+                            </a>
+                            <a href="@Url.Page("ManageImages", new { id = Model.Room.Id })" class="btn btn-primary flex-grow-1">
+                                Manage Images
+                            </a>
+                            <button type="button" class="btn btn-danger flex-grow-1" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                Delete Room
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Room</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete <strong>@Model.Room.Name</strong>?</p>
+                        <p class="text-danger small">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="post" class="d-inline">
+                            <button type="submit" asp-page-handler="delete" asp-route-roomId="@Model.Room.Id" class="btn btn-danger">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            <h4>Room Not Found</h4>
+            <p>The requested room could not be found.</p>
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,0 +1,165 @@
+@page
+@model Kiemtragiuaki.Pages.Rooms.IndexModel
+
+@{
+    ViewData["Title"] = "Room List";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Boarding House Rooms</h1>
+
+    <!-- Search and Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="SearchString" class="form-label">Search by Name:</label>
+                    <input type="text" class="form-control" id="SearchString" name="SearchString" 
+                           value="@Model.SearchString" placeholder="Room name...">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="FilterRoomType" class="form-label">Room Type:</label>
+                    <select class="form-select" id="FilterRoomType" name="FilterRoomType">
+                        <option value="">-- All Types --</option>
+                        @foreach (var type in Model.RoomTypes)
+                        {
+                            <option value="@type.Id" selected="@(Model.FilterRoomType == type.Id)">
+                                @type.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="FilterAvailable" class="form-label">Availability:</label>
+                    <select class="form-select" id="FilterAvailable" name="FilterAvailable">
+                        <option value="">-- All --</option>
+                        <option value="true" selected="@(Model.FilterAvailable == true)">Available</option>
+                        <option value="false" selected="@(Model.FilterAvailable == false)">Not Available</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="MaxPrice" class="form-label">Max Price:</label>
+                    <input type="number" class="form-control" id="MaxPrice" name="MaxPrice" 
+                           value="@Model.MaxPrice" placeholder="Price...">
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <label class="form-label">Sort by:</label>
+                    <div class="btn-group" role="group">
+                        <a href="@Url.Page("Index", new { SortOrder = "", SearchString = Model.SearchString, FilterRoomType = Model.FilterRoomType, FilterAvailable = Model.FilterAvailable, MaxPrice = Model.MaxPrice })" 
+                           class="btn btn-outline-secondary @(Model.SortOrder == null || Model.SortOrder == "" ? "active" : "")">
+                            Price ↑
+                        </a>
+                        <a href="@Url.Page("Index", new { SortOrder = "price_desc", SearchString = Model.SearchString, FilterRoomType = Model.FilterRoomType, FilterAvailable = Model.FilterAvailable, MaxPrice = Model.MaxPrice })" 
+                           class="btn btn-outline-secondary @(Model.SortOrder == "price_desc" ? "active" : "")">
+                            Price ↓
+                        </a>
+                        <a href="@Url.Page("Index", new { SortOrder = "area_desc", SearchString = Model.SearchString, FilterRoomType = Model.FilterRoomType, FilterAvailable = Model.FilterAvailable, MaxPrice = Model.MaxPrice })" 
+                           class="btn btn-outline-secondary @(Model.SortOrder == "area_desc" ? "active" : "")">
+                            Area ↓
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear Filters Link -->
+    @if (!string.IsNullOrEmpty(Model.SearchString) || Model.FilterRoomType.HasValue || Model.FilterAvailable.HasValue || Model.MaxPrice.HasValue)
+    {
+        <div class="mb-3">
+            <a href="@Url.Page("Index")" class="btn btn-outline-warning">Clear Filters</a>
+        </div>
+    }
+
+    <!-- Rooms List -->
+    @if (Model.Rooms.Count > 0)
+    {
+        <div class="row">
+            @foreach (var room in Model.Rooms)
+            {
+                var thumbnail = room.Images.FirstOrDefault(i => i.IsThumbnail) ?? room.Images.FirstOrDefault();
+
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (thumbnail != null)
+                        {
+                            <img src="@thumbnail.ImageUrl" class="card-img-top" alt="@room.Name" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-placeholder d-flex align-items-center justify-content-center" style="height: 200px; background-color: #e9ecef;">
+                                <span class="text-muted">No Image</span>
+                            </div>
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title">@room.Name</h5>
+                            <p class="card-text text-muted">@room.RoomType?.Name</p>
+
+                            <div class="mb-3">
+                                <p class="mb-1">
+                                    <strong>Price:</strong> @room.Price.ToString("C") 
+                                    <span class="badge bg-info">@room.Area m² = @room.PricePerSquareMeter.ToString("F2") đ/m²</span>
+                                </p>
+                                <p class="mb-1"><strong>Area:</strong> @room.Area m²</p>
+                                <p class="mb-1">
+                                    <strong>Status:</strong> 
+                                    @if (room.IsAvailable)
+                                    {
+                                        <span class="badge bg-success">Available</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Not Available</span>
+                                    }
+                                </p>
+                            </div>
+
+                            <p class="card-text small text-muted">@room.Description</p>
+
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Page("Details", new { id = room.Id })" class="btn btn-info btn-sm flex-grow-1">
+                                    View Details
+                                </a>
+                                <a href="@Url.Page("Edit", new { id = room.Id })" class="btn btn-warning btn-sm flex-grow-1">
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No rooms found</h4>
+            <p>No rooms match your search criteria. Try adjusting your filters.</p>
+        </div>
+    }
+
+    <!-- Create Button -->
+    <div class="mb-4">
+        <a href="@Url.Page("Create")" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle"></i> Add New Room
+        </a>
+    </div>
+</div>
+
+<style>
+    .btn.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>

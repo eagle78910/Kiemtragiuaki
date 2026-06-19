@@ -1,0 +1,104 @@
+@page "{id}"
+@model Kiemtragiuaki.Pages.Rooms.EditModel
+
+@{
+    ViewData["Title"] = "Edit Room";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <a href="@Url.Page("Details", new { id = Model.Room.Id })" class="btn btn-outline-secondary mb-4">← Back</a>
+
+            <h1 class="mb-4">Edit Room</h1>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Room.Id" value="@Model.Room.Id">
+
+                        <div class="row mb-3">
+                            <label for="Room_Name" class="col-sm-3 col-form-label">Name:</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="Room_Name" name="Room.Name" 
+                                       value="@Model.Room.Name" required>
+                                <span asp-validation-for="Room.Name" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="Room_RoomTypeId" class="col-sm-3 col-form-label">Room Type:</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="Room_RoomTypeId" name="Room.RoomTypeId" required>
+                                    <option value="">-- Select Room Type --</option>
+                                    @foreach (var type in Model.RoomTypes)
+                                    {
+                                        <option value="@type.Id" selected="@(Model.Room.RoomTypeId == type.Id)">
+                                            @type.Name
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Room.RoomTypeId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="Room_Price" class="col-sm-3 col-form-label">Price (VND):</label>
+                            <div class="col-sm-9">
+                                <input type="number" step="0.01" class="form-control" id="Room_Price" 
+                                       name="Room.Price" value="@Model.Room.Price" required>
+                                <span asp-validation-for="Room.Price" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="Room_Area" class="col-sm-3 col-form-label">Area (m²):</label>
+                            <div class="col-sm-9">
+                                <input type="number" step="0.01" class="form-control" id="Room_Area" 
+                                       name="Room.Area" value="@Model.Room.Area" required>
+                                <span asp-validation-for="Room.Area" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-9 offset-sm-3">
+                                <div class="form-check">
+                                    <input type="hidden" name="Room.IsAvailable" value="false">
+                                    <input type="checkbox" class="form-check-input" id="Room_IsAvailable" 
+                                           name="Room.IsAvailable" value="true"
+                                           @(Model.Room.IsAvailable ? "checked" : "")>
+                                    <label class="form-check-label" for="Room_IsAvailable">
+                                        Available
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="Room_Description" class="col-sm-3 col-form-label">Description:</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" id="Room_Description" name="Room.Description" 
+                                          rows="4">@Model.Room.Description</textarea>
+                                <span asp-validation-for="Room.Description" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-9 offset-sm-3">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <a href="@Url.Page("Details", new { id = Model.Room.Id })" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
